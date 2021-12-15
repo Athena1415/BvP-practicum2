@@ -28,6 +28,19 @@ def consoleInfo():
           "3: Info Magazijn\n"
           "4: Info Bestelling\n"
           )
+    inputt = int(input(">>> "))
+
+    if inputt == 1:
+        print() #info klant
+
+    if inputt == 2:
+        print() #infor prod
+
+    if inputt == 3:
+        print() #info magazijn
+
+    if input == 4:
+        print() #info bestelling
 
 def consoleKlant(hoogsteKlantnummer, magazijn):
     naam = input("Naam klant: ")
