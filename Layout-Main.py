@@ -23,24 +23,28 @@ def consoleMain():
         print("Number not valid")
 
 def consoleInfo():
-    print("1: Info klant\n"
-          "2: Info Product\n"
-          "3: Info Magazijn\n"
-          "4: Info Bestelling\n"
+    print("1: Info product\n"
+          "2: Winst product\n"
+          "3: Info magazijn\n"
+          "4: Verkoopwaarde magazijn\n"
+          "5: Winst magazijn\n"
+          "6: Meest winstgevend product\n"
+          "7: Beste klant\n"
           )
     inputt = int(input(">>> "))
 
-    if inputt == 1:
-        print() #info klant
 
     if inputt == 2:
-        print() #infor prod
+        print() #info prod
+        '''
+        totaalWinst
+        totaal
+        winst voor prod
+        
+        '''
 
     if inputt == 3:
-        print() #info magazijn
 
-    if input == 4:
-        print() #info bestelling
 
 def consoleKlant(hoogsteKlantnummer, magazijn):
     naam = input("Naam klant: ")
