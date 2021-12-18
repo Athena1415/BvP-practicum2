@@ -21,7 +21,7 @@ class Magazijn:
             if product.bepaalWinst() > maximum:
                 maximum = product.bepaalWinst()
                 maxproduct = product
-        print("Het meest winstgevend product is %s met een winst van %s" %(maxproduct, maximum))
+        print("Het meest winstgevend product is %s met een winst van %s" %(maxproduct.getNaam(), round(maximum, 2)))
 
     def addBestelling(self, bestelling):
         self._lijstMetBestellingen.append(bestelling)
@@ -29,15 +29,15 @@ class Magazijn:
     def besteKlant(self):
         klantendict = {}
         for bestelling in self._lijstMetBestellingen:
-            try: klantendict[bestelling.getKlant()] += bestelling.getAantal()
-            except: klantendict[bestelling.getKlant()] = bestelling.getAantal()
+            try: klantendict[bestelling.getKlant()] += bestelling.getWinst()
+            except: klantendict[bestelling.getKlant()] = bestelling.getWinst()
         maximum = 0
         for key in klantendict.keys():
             if klantendict[key] > maximum:
                 maximum = klantendict[key]
                 besteKlant = key
 
-        print("De best klant is %s met een winst van €%s." %(besteKlant.getNaam(), maximum))
+        print("De best klant is %s met een winst van €%s." %(besteKlant.getNaam(), round(maximum, 2)))
 
 
 
@@ -54,6 +54,7 @@ class Producttype:
 
     def addToStock(self, aantal):
         self._aantal += int(aantal)
+
     def removeFromStock(self, aantal):
         if aantal < self._aantal:
             self._aantal -= int(aantal)
@@ -65,15 +66,21 @@ class Producttype:
         return self._verkoopprijs * self._aantal
 
     def bepaalWinst(self):
-        return (self._verkoopprijs - self._aankoopprijs)*self._verkocht
+        return (self._verkoopprijs - self._aankoopprijs) * self._verkocht
+    def bepaalWinstPerItem(self):
+        return self._verkoopprijs - self._aankoopprijs
     def getAantal(self):
         return self._aantal
 
     def getInformatie(self):
-        return "aantal: %s, aankoopprijs: €%s, verkoopprijs: €%s, aantal: %s" %(self._naam, self._aankoopprijs, self._verkoopprijs, self._aantal)
+        return "Naam: %s, aankoopprijs: €%s, verkoopprijs: €%s, aantal: %s" %(self._naam, self._aankoopprijs, self._verkoopprijs, self._aantal)
 
     def getVerkocht(self):
         return self._verkocht
+
+    def getNaam(self):
+        return self._naam
+
 class Klant:
 
     def __init__(self, naam, klantennummer):
@@ -98,6 +105,8 @@ class Bestelling:
         return self._klant
     def getAantal(self):
         return self._aantal
+    def getWinst(self):
+        return self._aantal * self._type.bepaalWinstPerItem()
 
 
 
@@ -136,122 +145,179 @@ def simulatie():
 
 
 
+'''
+ALLEMAAL IN EEN FUNCTIE ZETTEN ANDERS PROBLEEM MET VARIABELEN
 
+
+'''
 
 
 
 def consoleMain():
     magazijn, hoogsteKlantnummer = startOp()
 
-    print("Wat wilt u doen?\n"
-          "1: Info \n"
-          "2: Voeg klant toe\n"
-          "3: Voeg bestelling toe\n"
-          "4: Nieuw produt / wijziging\n"
-          "5: Sluit af"
-          )
-    inputt = int(input(">>> "))
+    while True:
+        print("Wat wilt u doen?\n"
+              "1: Info \n"
+              "2: Voeg klant toe\n"
+              "3: Voeg bestelling toe\n"
+              "4: Nieuw produt / wijziging\n"
+              "5: Sluit af"
+              )
+        inputt = int(input(">>> "))
 
-    if inputt == 1:
-        consoleInfo(magazijn)
-    elif inputt == 2:
-        consoleKlant(hoogsteKlantnummer, magazijn)
-    elif inputt == 3:
-        consoleBestelling(magazijn)
-    elif inputt == 4:
-        consoleProduct(magazijn)
-    elif inputt == 5:
-        sluitAf()
-    else:
-        print("Number not valid")
+        if inputt == 1:
+            print("1: Info product\n"
+                  "2: Winst product\n"
+                  "3: Info magazijn\n"
+                  "4: Verkoopwaarde magazijn\n"
+                  "5: Winst magazijn\n"
+                  "6: Meest winstgevend product\n"
+                  "7: Beste klant\n"
+                  )
+            inputt = int(input(">>> "))
+
+            if inputt == 1:
+                product = input("Product: ")
+                print(eval(product.lower()).getInformatie())
+            if inputt == 2:
+                product = input("Product: ")
+                print(product, "heeft €%s winst gemaakt." % round(eval(product.lower()).bepaalWinst(), 2))
+            if inputt == 3:
+                magazijn.getInfo()
+            if inputt == 4:
+                print("De verkoopwaarde van het magazijn is €%s." % magazijn.getVerkoopwaardeStock())
+            if inputt == 5:
+                print("Het magzijn heeft €%s winst gemaakt." % magazijn.getWinst())
+            if inputt == 6:
+                magazijn.meestWintstgevendProduct()
+            if inputt == 7:
+                magazijn.besteKlant()
+
+        elif inputt == 2:
+            naam = input("Naam klant: ")
+            hoogsteKlantnummer += 1
+            klantNummer = hoogsteKlantnummer
+            exec("%s = Klant('%s', '%s')" % (naam.lower(), naam, klantNummer))
+
+        elif inputt == 3:
+            klant = eval(input("Klant: ").lower())
+            product = input("Product: ")
+            aantal = int(input("Aantal: "))
+            Bestelling(aantal, eval(product.lower()), klant, magazijn)
+
+        elif inputt == 4:
+            print("1: Nieuw product\n"
+                  "2: Stock aanvullen"
+                  )
+            inputt = int(input(">>> "))
+
+            if inputt == 1:
+                product = input("Naam product: ")
+                aankoopprijs = float(input("Aankoopprijs: "))
+                verkoopprijs = float(input("Verkoopprijs: "))
+                exec("%s = Producttype('%s', %s, %s, %s)" % (product.lower(), product, aankoopprijs, verkoopprijs, "magazijn"))
+
+            elif inputt == 2:
+                product = input("Naam product: ")
+                aantal = int(input("Toegevoegd aan stock: "))
+                eval(product.lower()).addToStock(aantal)
+
+            else:
+                print("Number not valid")
+
+        elif inputt == 5:
+            return sluitAf()
+
+        else:
+            print("Number not valid")
+
+        print("")
 
 
-def consoleInfo(magazijn):
-    print("1: Info product\n"
-          "2: Winst product\n"
-          "3: Info magazijn\n"
-          "4: Verkoopwaarde magazijn\n"
-          "5: Winst magazijn\n"
-          "6: Meest winstgevend product\n"
-          "7: Beste klant\n"
-          )
-    inputt = int(input(">>> "))
-
-    if inputt == 1:
-        product = input("Product: ")
-        print(eval(product).getInformatie())
-
-    if inputt == 2:
-        product = input("Product: ")
-        print(eval(product).bepaalWinst())
-
-    if inputt == 3:
-        print(magazijn.getInfo())
-
-    if inputt == 4:
-        print(magazijn.getVerkoopwaardeStock())
-
-    if inputt == 5:
-        print(magazijn.getWinst())
-
-    if inputt == 6:
-        magazijn.meestWintstgevendProduct()
-
-    if inputt == 7:
-        magazijn.besteKlant()
-
-
+# def consoleInfo(magazijn):
+    # print("1: Info product\n"
+    #       "2: Winst product\n"
+    #       "3: Info magazijn\n"
+    #       "4: Verkoopwaarde magazijn\n"
+    #       "5: Winst magazijn\n"
+    #       "6: Meest winstgevend product\n"
+    #       "7: Beste klant\n"
+    #       )
+    # inputt = int(input(">>> "))
+    #
+    # if inputt == 1:
+    #     product = input("Product: ")
+    #     print(eval(product).getInformatie())
+    #
+    # if inputt == 2:
+    #     product = input("Product: ")
+    #     print(eval(product).bepaalWinst())
+    #
+    # if inputt == 3:
+    #     print(magazijn.getInfo())
+    #
+    # if inputt == 4:
+    #     print(magazijn.getVerkoopwaardeStock())
+    #
+    # if inputt == 5:
+    #     print(magazijn.getWinst())
+    #
+    # if inputt == 6:
+    #     magazijn.meestWintstgevendProduct()
+    #
+    # if inputt == 7:
+    #     magazijn.besteKlant()
 
 
-def consoleKlant(hoogsteKlantnummer, magazijn):
-    naam = input("Naam klant: ")
-    hoogsteKlantnummer += 1
-    klantNummer = hoogsteKlantnummer
-    eval("%s = Klant(%s, %s, %s)" % (naam.lower(), naam, klantNummer, magazijn))
 
 
-def consoleBestelling(magazijn):
-    product = input("Product: ")
-    aantal = int(input("Aantal: "))
-    klant = eval(input("Klant: ").lower())
-    Bestelling(eval(product.lower()), aantal, eval(klant.lower()), magazijn)
+# def consoleKlant(hoogsteKlantnummer, magazijn):
+    # naam = input("Naam klant: ")
+    # hoogsteKlantnummer += 1
+    # klantNummer = hoogsteKlantnummer
+    # exec("%s = Klant('%s', '%s')" % (naam.lower(), naam, klantNummer))
 
 
-def consoleProduct(magazijn):
-    print("1: Nieuw product\n"
-          "2: Stock aanvullen\n"
-          )
-    inputt = int(input(">>> "))
+# def consoleBestelling(magazijn):
+    # product = input("Product: ")
+    # aantal = int(input("Aantal: "))
+    # klant = eval(input("Klant: ").lower())
+    # Bestelling(eval(product.lower()), aantal, eval(klant.lower()), magazijn)
 
-    if inputt == 1:
-        product = input("Naam product: ")
-        aankoopprijs = float(input("Aankoopprijs: "))
-        verkoopprijs = float(input("Verkoopprijs: "))
-        eval("%s = Producttype(%s, %s, %s, %s)" % (product.lower(), product, aankoopprijs, verkoopprijs, magazijn))
 
-    elif inputt == 2:
-        product = input("Naam product: ")
-        aantal = input("Toegevoegd aan stock: ")
-        eval(product.lower()).addStock(aantal)
-
-    else:
-        print("Number not valid")
+# def consoleProduct(magazijn):
+    # print("1: Nieuw product\n"
+    #       "2: Stock aanvullen"
+    #       )
+    # inputt = int(input(">>> "))
+    #
+    # if inputt == 1:
+    #     product = input("Naam product: ")
+    #     aankoopprijs = float(input("Aankoopprijs: "))
+    #     verkoopprijs = float(input("Verkoopprijs: "))
+    #     exec("%s = Producttype('%s', %s, %s, %s)" % (product.lower(), product, aankoopprijs, verkoopprijs, "magazijn"))
+    #     print(banaan.getInformatie())
+    #
+    # elif inputt == 2:
+    #     product = input("Naam product: ")
+    #     aantal = int(input("Toegevoegd aan stock: "))
+    #     print(banaan.getInformatie())
+    #     eval(product.lower()).addStock(aantal)
+    #
+    # else:
+    #     print("Number not valid")
 
 
 def sluitAf():
-    pass
+    return False
 
 
-def startOp()
+def startOp():
+    magazijn = Magazijn()
+    hoogsteKlantnummer = 100000
+    return magazijn, hoogsteKlantnummer
 
 
-def main():
-    # makeBackup()
-    print("Wat wilt u doen?\n"
-          "1: iets aanmaken\n"
-          "2: bestelling opgeven\n"
-          "3: info printen\n"
-          "4: winst tonen")
-    inputt = input(">>> ")
 
-main()
+consoleMain()
